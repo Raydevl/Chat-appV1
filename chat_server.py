@@ -45,5 +45,10 @@ def receive():
         broadcast(f"{nickname} joined the chat!".encode('utf-8'))
         client.send('Connected to the server!'.encode('utf-8'))
 
-        thread = threading.Thread(target=handle, args
+        thread = threading.Thread(target=handle, args=(client,))
+        thread.start()
+
+print("Server is listening...")
+receive()
+``
 ##This is incomplete i think, we need to replace the IP adress with the home computer IP adress, and debug for any code errors.
