@@ -5,31 +5,45 @@ import threading
 SERVER = '127.0.0.1'
 PORT = 12345
 
-# Create client socket
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect((SERVER, PORT))
+# Create server socket
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind((SERVER, PORT))
+server.listen()
+
+clients = []
+nicknames = []
+
+def broadcast(message):
+    for client in clients:
+        client.send(message)
+
+def handle(client):
+    while True:
+        try:
+            message = client.recv(1024)
+            broadcast(message)
+        except:
+            index = clients.index(client)
+            clients.remove(client)
+            client.close()
+            nickname = nicknames[index]
+            nicknames.remove(nickname)
+            broadcast(f'{nickname} left the chat!'.encode('utf-8'))
+            break
 
 def receive():
     while True:
-        try:
-            message = client.recv(1024).decode('utf-8')
-            if message == 'NICK':
-                client.send(input('Enter your nickname: ').encode('utf-8'))
-            else:
-                print(message)
-        except:
-            print("Error! Connection closed.")
-            client.close()
-            break
+        client, address = server.accept()
+        print(f"Connected with {str(address)}")
 
-def write():
-    while True:
-        message = f"{nickname}: {input('')}"
-        client.send(message.encode('utf-8'))
+        client.send('NICK'.encode('utf-8'))
+        nickname = client.recv(1024).decode('utf-8')
+        nicknames.append(nickname)
+        clients.append(client)
 
-# Request and set nickname
-print("Enter your nickname: ")
-nickname = input()
+        print(f"Nickname is {nickname}!")
+        broadcast(f"{nickname} joined the chat!".encode('utf-8'))
+        client.send('Connected to the server!'.encode('utf-8'))
 
-# Start threads for receiving and sending messages
-receive
+        thread = threading.Thread(target=handle, args
+##This is incomplete i think, we need to replace the IP adress with the home computer IP adress, and debug for any code errors.
